@@ -18,6 +18,7 @@ server.get('/', function(req, res) {
 
 server.post('/api/bears',(req, res) => {
   const bearInformation = req.body;
+  if (req.body.species && req.body.latinName) {
   const bear = new Bear(bearInformation);
   bear
     .save()
@@ -27,6 +28,9 @@ server.post('/api/bears',(req, res) => {
     .catch((error) => {
       res.status(500).json({ error: 'There was an error while saving the Bear to the Database' })
     });
+  } else {
+    res.status(422).json({ error: 'Must provide Species and Latin Name'})
+  };
 });
 
 server.get('/api/bears', (req, res) => {
@@ -42,6 +46,7 @@ server.get('/api/bears', (req, res) => {
 
 server.get('/api/bears/:id', (req, res) => {
   const id =req.params.id;
+  if (id) {
   Bear.findById(id)
     .then((bear) => {
       res.status(200).json(bears);
@@ -50,6 +55,9 @@ server.get('/api/bears/:id', (req, res) => {
     res.status(500)
     res.json({ error: 'The bear information could not be retrieved.' });
   });
+  } else {
+    res.status(422).json({ error: 'Must provide ID' })
+  } ;
 });
 
 mongoose
