@@ -16,24 +16,49 @@ server.get('/', function(req, res) {
   res.status(200).json({ status: 'API Running' });
 });
 
-server.post('/api/bears', (req, res) => {
+server.post('/api/bears',(req, res) => {
   const bearInformation = req.body;
   const bear = new Bear(bearInformation);
-  bear.save()
+  bear
+    .save()
     .then((savedBear) => {
       res.status(201).json(savedBear);
-    }).catch((error) => {
+    })
+    .catch((error) => {
       res.status(500).json({ error: 'There was an error while saving the Bear to the Database' })
     });
+});
+
+server.get('/api/bears', (req, res) => {
+  Bear.find({})
+    .then((bears) => {
+      res.status(200).json(bears);
+  })
+  .catch((error) => {
+    res.status(500)
+    res.json({ error: 'The information could not be retrieved.' });
+  });
+});
+
+server.get('/api/bears/:id', (req, res) => {
+  const id =req.params.id;
+  Bear.findById(id)
+    .then((bear) => {
+      res.status(200).json(bears);
+  })
+  .catch((error) => {
+    res.status(500)
+    res.json({ error: 'The bear information could not be retrieved.' });
+  });
 });
 
 mongoose
   .connect('mongodb://localhost/BearKeeper')
   .then(db => {
-    console.log(9`Successfully connected to the ${db.connections[0].name} database`);
+    console.log(`Successfully connected to the ${db.connections[0].name} database`);
   })
   .catch(error => {
-    console.error('Databse Connection Failed');
+    console.error('Database Connection Failed');
   });
 
 const port = process.env.PORT || 5005;
