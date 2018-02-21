@@ -29,7 +29,7 @@ server.post('/api/bears',(req, res) => {
       res.status(500).json({ error: 'There was an error while saving the Bear to the Database' })
     });
   } else {
-    res.status(422).json({ error: 'Must provide Species and Latin Name'})
+    res.status(400).json({ error: 'Must provide Species and Latin Name'})
   };
 });
 
@@ -46,8 +46,31 @@ server.get('/api/bears', (req, res) => {
 
 server.get('/api/bears/:id', (req, res) => {
   const id =req.params.id;
-  if (id) {
   Bear.findById(id)
+    .then((bear) => {
+      if(bear) {
+        res.status(200).json(bears);
+      } else {
+        res.status(404).json({ message: 'Not Found'});
+      }
+  })
+  .catch((error) => {
+    if (error.name === 'CastError') {
+      res
+        .status(400)
+        .json({ message: `the ID: ${error.value} is not valid` });
+    } else {
+      res.status(500).json({
+        message: 'The bear information could not be retrieved'
+      });
+    }
+  });
+});
+
+server.delete('/api/bears/:id', (req, res) => {
+  const id =req.params.id;
+
+  Bear.findByIdAndRemove(id)
     .then((bear) => {
       res.status(200).json(bears);
   })
@@ -55,10 +78,33 @@ server.get('/api/bears/:id', (req, res) => {
     res.status(500)
     res.json({ error: 'The bear information could not be retrieved.' });
   });
-  } else {
-    res.status(422).json({ error: 'Must provide ID' })
-  } ;
 });
+
+
+server.put('/api/bears/:id',(req, res) => {
+  const { species, latinName } = req.body;
+  const { id } = req.params.id;
+
+  if (species && latinName) {
+    Bear.findByIdAndUpdate(id, req.body)
+      .then((updatedBear) => {
+        if (updatedBear) {
+          res.status(201).json(updatedBear);
+        } else {
+          res
+            .status(404)
+            .json({ error: `The bear with ID: ${id} does not exist`});
+        }
+     })
+      .catch((error) => {
+        res.status(500).json({ error: 'There was an error while saving the Bear to the Database' })
+      });
+    } else {
+      res.status(500).json({ error: 'Must provide Species and Latin Name'})
+  };
+});
+
+
 
 mongoose
   .connect('mongodb://localhost/BearKeeper')
