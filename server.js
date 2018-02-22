@@ -68,11 +68,11 @@ server.get('/api/bears/:id', (req, res) => {
 });
 
 server.delete('/api/bears/:id', (req, res) => {
-  const id =req.params.id;
+  const { id } = req.params;
 
   Bear.findByIdAndRemove(id)
     .then((bear) => {
-      res.status(200).json(bears);
+      res.status(200).json(`The bear with id:${id} has been deleted`);
   })
   .catch((error) => {
     res.status(500)
@@ -83,7 +83,7 @@ server.delete('/api/bears/:id', (req, res) => {
 
 server.put('/api/bears/:id',(req, res) => {
   const { species, latinName } = req.body;
-  const { id } = req.params.id;
+  const { id }  = req.params;
 
   if (species && latinName) {
     Bear.findByIdAndUpdate(id, req.body)
